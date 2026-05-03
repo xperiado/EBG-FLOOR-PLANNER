@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Elevated Building Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <aside class="sidebar">
+        <div class="brand-card">
+          <div class="brand-lockup">
+            <img src="./logo no background.png" alt="Elevated Building Planner logo" class="brand-logo" />
+          </div>
+        </div>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Job details</h2>
+            <p>Track the project name and customer info with the floor plan.</p>
+          </div>
+
+          <form id="project-form" class="stack">
+            <label>
+              <span>Job name</span>
+              <input id="project-name" name="projectName" type="text" placeholder="Main floor remodel" />
+            </label>
+            <label>
+              <span>Customer name</span>
+              <input id="customer-name" name="customerName" type="text" placeholder="Jordan Smith" />
+            </label>
+            <label>
+              <span>Phone</span>
+              <input id="customer-phone" name="customerPhone" type="text" placeholder="(555) 123-4567" />
+            </label>
+            <label>
+              <span>Email</span>
+              <input id="customer-email" name="customerEmail" type="text" placeholder="jordan@example.com" />
+            </label>
+            <label>
+              <span>Project address</span>
+              <input id="project-address" name="projectAddress" type="text" placeholder="123 Oak Street, Raleigh, NC" />
+            </label>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Project floors</h2>
+            <p>Manage separate plans for each floor of the job.</p>
+          </div>
+
+          <div class="stack">
+            <label>
+              <span>Active floor</span>
+              <select id="floor-select" name="activeFloor"></select>
+            </label>
+            <label>
+              <span>New floor name</span>
+              <input id="new-floor-name" type="text" placeholder="Second floor" />
+            </label>
+            <div class="button-row">
+              <button id="add-floor" class="secondary-button" type="button">Add floor</button>
+              <button id="delete-floor" class="ghost-button danger" type="button">Delete floor</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>New room defaults</h2>
+            <p>Choose the starting type and color before you draw on the canvas.</p>
+          </div>
+
+          <form id="room-form" class="stack">
+            <label>
+              <span>Room type</span>
+              <select id="room-type" name="type">
+                <option value="Unassigned">Unassigned</option>
+                <option value="Living Room">Living Room</option>
+                <option value="Kitchen">Kitchen</option>
+                <option value="Dining Room">Dining Room</option>
+                <option value="Primary Bedroom">Primary Bedroom</option>
+                <option value="Bedroom">Bedroom</option>
+                <option value="Bathroom">Bathroom</option>
+                <option value="Laundry">Laundry</option>
+                <option value="Mudroom">Mudroom</option>
+                <option value="Office">Office</option>
+                <option value="Sunroom">Sunroom</option>
+                <option value="Hallway">Hallway</option>
+                <option value="Closet">Closet</option>
+                <option value="Garage">Garage</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </label>
+            <div class="two-up room-form-dimensions">
+              <label>
+                <span>Width (ft)</span>
+                <input id="room-width" name="width" type="number" min="4" max="60" value="14" required readonly />
+              </label>
+              <label>
+                <span>Depth (ft)</span>
+                <input id="room-height" name="height" type="number" min="4" max="60" value="12" required readonly />
+              </label>
+            </div>
+            <div class="two-up room-form-dimensions">
+              <label>
+                <span>X (ft)</span>
+                <input id="room-x" name="x" type="number" min="0" max="120" value="6" required readonly />
+              </label>
+              <label>
+                <span>Y (ft)</span>
+                <input id="room-y" name="y" type="number" min="0" max="120" value="6" required readonly />
+              </label>
+            </div>
+            <label>
+              <span>Color</span>
+              <input id="room-color" name="color" type="color" value="#db6d52" />
+            </label>
+            <p id="draw-status" class="tool-status">Draw mode off. Use the draw button above the canvas.</p>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Project summary</h2>
+            <p>Live counts to support scope and estimating.</p>
+          </div>
+          <dl class="stats" id="stats">
+            <div>
+              <dt>Rooms</dt>
+              <dd id="room-count">0</dd>
+            </div>
+            <div>
+              <dt>Total area</dt>
+              <dd id="total-area">0 sq ft</dd>
+            </div>
+            <div>
+              <dt>Selected</dt>
+              <dd id="selected-room-label">None</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Estimate settings</h2>
+            <p>Adjust pricing assumptions for printable estimate sheets.</p>
+          </div>
+
+          <form id="estimate-form" class="stack">
+            <div class="two-up">
+              <label>
+                <span>Area rate ($/sq ft)</span>
+                <input id="estimate-sqft-rate" type="number" min="0" step="1" value="140" />
+              </label>
+              <label>
+                <span>Wall rate ($/lf)</span>
+                <input id="estimate-wall-rate" type="number" min="0" step="1" value="20" />
+              </label>
+            </div>
+            <div class="two-up">
+              <label>
+                <span>Door allowance ($ each)</span>
+                <input id="estimate-door-rate" type="number" min="0" step="1" value="450" />
+              </label>
+              <label>
+                <span>Window allowance ($ each)</span>
+                <input id="estimate-window-rate" type="number" min="0" step="1" value="325" />
+              </label>
+            </div>
+            <label>
+              <span>Contingency (%)</span>
+              <input id="estimate-contingency" type="number" min="0" max="100" step="1" value="10" />
+            </label>
+          </form>
+        </section>
+
+      </aside>
+
+      <main class="workspace">
+        <section class="project-banner">
+          <div class="project-banner-copy">
+            <h2 id="project-title">Untitled job</h2>
+            <p id="project-subtitle" class="lede">Add customer details to personalize this plan.</p>
+          </div>
+          <div class="project-contact" id="project-contact">
+            <span class="contact-pill"><strong>Floor:</strong> <span id="active-floor-label">Main floor</span></span>
+            <span class="contact-pill"><strong>Customer:</strong> <span id="contact-name">Not set</span></span>
+            <span class="contact-pill"><strong>Phone:</strong> <span id="contact-phone">Not set</span></span>
+            <span class="contact-pill"><strong>Email:</strong> <span id="contact-email">Not set</span></span>
+          </div>
+        </section>
+
+        <section class="hero-strip">
+          <div>
+            <p class="eyebrow">Canvas</p>
+            <h2>Plan layout</h2>
+          </div>
+          <div class="actions">
+            <button id="undo-action" class="ghost-button" type="button" title="Undo" aria-label="Undo">Undo</button>
+            <button id="redo-action" class="ghost-button" type="button" title="Redo" aria-label="Redo">Redo</button>
+            <button id="draw-room" class="primary-button" type="button">Draw room</button>
+            <button id="draw-wall" class="ghost-button" type="button">Wall</button>
+            <button id="lidar-toggle" class="ghost-button" type="button" aria-expanded="false" aria-controls="lidar-panel">LiDAR</button>
+            <div class="action-menu">
+              <button id="openings-toggle" class="ghost-button" type="button" aria-expanded="false" aria-controls="openings-dropdown">
+                Openings
+              </button>
+              <div id="openings-dropdown" class="actions-dropdown tool-dropdown" hidden>
+                <button id="draw-door" class="menu-item" type="button">Door</button>
+                <button id="draw-window" class="menu-item" type="button">Window</button>
+              </div>
+            </div>
+            <div class="action-menu">
+              <button id="fixtures-toggle" class="ghost-button" type="button" aria-expanded="false" aria-controls="fixtures-dropdown">
+                Fixtures
+              </button>
+              <div id="fixtures-dropdown" class="actions-dropdown tool-dropdown fixtures-dropdown" hidden>
+                <button id="draw-sink" class="menu-item" type="button">Sink</button>
+                <button id="draw-vanity" class="menu-item" type="button">Vanity</button>
+                <button id="draw-toilet" class="menu-item" type="button">Toilet</button>
+                <button id="draw-cabinet" class="menu-item" type="button">Cabinet</button>
+                <button id="draw-outlet" class="menu-item" type="button">Outlet</button>
+                <button id="draw-switch" class="menu-item" type="button">Switch</button>
+              </div>
+            </div>
+            <div class="action-menu">
+              <button id="measure-toggle" class="ghost-button" type="button" aria-expanded="false" aria-controls="measure-dropdown">
+                Labels
+              </button>
+              <div id="measure-dropdown" class="actions-dropdown measure-dropdown" hidden>
+                <label class="menu-check">
+                  <input id="toggle-wall-labels" type="checkbox" />
+                  <span>Wall lengths</span>
+                </label>
+                <label class="menu-check">
+                  <input id="toggle-room-area-labels" type="checkbox" />
+                  <span>Room area</span>
+                </label>
+                <label class="menu-check">
+                  <input id="toggle-room-perimeter-labels" type="checkbox" />
+                  <span>Room perimeter</span>
+                </label>
+              </div>
+            </div>
+            <div class="action-menu">
+              <button id="actions-toggle" class="ghost-button" type="button" aria-expanded="false" aria-controls="actions-dropdown">
+                Actions
+              </button>
+              <div id="actions-dropdown" class="actions-dropdown" hidden>
+                <button id="load-sample" class="menu-item" type="button">Load sample</button>
+                <button id="export-client-pdf" class="menu-item" type="button">Client PDF</button>
+                <button id="export-estimate-pdf" class="menu-item" type="button">Estimate sheet</button>
+                <button id="export-plan" class="menu-item" type="button">Export JSON</button>
+                <label for="import-plan" class="menu-item file-menu-item">Import JSON</label>
+              </div>
+            </div>
+            <input id="import-plan" type="file" accept="application/json" hidden />
+            <button id="clear-plan" class="ghost-button danger">Clear</button>
+          </div>
+        </section>
+
+        <section class="canvas-card">
+          <div id="lidar-panel" class="lidar-panel" hidden>
+            <div class="lidar-copy">
+              <p class="eyebrow">LiDAR mode</p>
+              <h3>Bring a whole-room scan into this floor</h3>
+              <p id="lidar-support">Checking device support...</p>
+              <div id="lidar-summary" class="lidar-summary">No scan imported for this floor yet.</div>
+            </div>
+            <div class="lidar-controls">
+              <label>
+                <span>Scan handling</span>
+                <select id="lidar-merge-mode">
+                  <option value="append">Add to current floor</option>
+                  <option value="replace">Replace current floor</option>
+                </select>
+              </label>
+              <div class="button-row">
+                <label for="lidar-file" class="secondary-button file-button">Import scan</label>
+                <button id="load-lidar-sample" class="ghost-button" type="button">Sample scan</button>
+              </div>
+              <input id="lidar-file" type="file" accept=".json,.csv,.txt,application/json,text/csv,text/plain" hidden />
+            </div>
+          </div>
+          <div class="canvas-meta">
+            <div class="canvas-scale">
+              <strong>Scale:</strong> 1 square = 1 foot
+              <span id="zoom-readout" class="zoom-readout">100%</span>
+            </div>
+            <div class="canvas-meta-actions">
+              <div class="zoom-controls" aria-label="Canvas zoom controls">
+                <button id="zoom-out" class="ghost-button small" type="button" aria-label="Zoom out">-</button>
+                <button id="zoom-reset" class="ghost-button small" type="button">Fit</button>
+                <button id="zoom-in" class="ghost-button small" type="button" aria-label="Zoom in">+</button>
+              </div>
+              <div class="hint">Tip: double-click rooms to edit, or double-click fixtures and openings to remove them.</div>
+            </div>
+          </div>
+          <div class="canvas-wrap canvas-shell">
+            <svg id="planner-canvas" viewBox="0 0 1200 900" aria-label="Floor planning canvas"></svg>
+            <form id="canvas-room-editor" class="canvas-room-editor" hidden>
+              <div class="panel-heading">
+                <h2>Edit room</h2>
+                <p>Resize and rename without leaving the canvas.</p>
+              </div>
+              <label>
+                <span>Room type</span>
+                <select id="canvas-edit-type">
+                  <option value="Unassigned">Unassigned</option>
+                  <option value="Living Room">Living Room</option>
+                  <option value="Kitchen">Kitchen</option>
+                  <option value="Dining Room">Dining Room</option>
+                  <option value="Primary Bedroom">Primary Bedroom</option>
+                  <option value="Bedroom">Bedroom</option>
+                  <option value="Bathroom">Bathroom</option>
+                  <option value="Laundry">Laundry</option>
+                  <option value="Mudroom">Mudroom</option>
+                  <option value="Office">Office</option>
+                  <option value="Sunroom">Sunroom</option>
+                  <option value="Hallway">Hallway</option>
+                  <option value="Closet">Closet</option>
+                  <option value="Garage">Garage</option>
+                  <option value="Custom">Custom</option>
+                </select>
+              </label>
+              <div class="two-up">
+                <label>
+                  <span>Width (ft)</span>
+                  <input id="canvas-edit-width" type="number" min="4" max="60" />
+                </label>
+                <label>
+                  <span>Depth (ft)</span>
+                  <input id="canvas-edit-height" type="number" min="4" max="60" />
+                </label>
+              </div>
+              <label>
+                <span>Color</span>
+                <input id="canvas-edit-color" type="color" />
+              </label>
+              <div class="button-row">
+                <button id="canvas-save-room" type="submit" class="secondary-button">Save</button>
+                <button id="canvas-delete-room" type="button" class="ghost-button">Delete</button>
+                <button id="canvas-close-editor" type="button" class="ghost-button">Close</button>
+              </div>
+            </form>
+            <div id="canvas-segment-editor" class="canvas-segment-editor" hidden>
+              <div class="panel-heading">
+                <h2 id="canvas-segment-title">Edit item</h2>
+                <p id="canvas-segment-copy">Delete this item from the floor plan.</p>
+              </div>
+              <label id="canvas-opening-width-label" hidden>
+                <span>Width (ft)</span>
+                <input id="canvas-opening-width" type="number" min="1" max="20" step="1" />
+              </label>
+              <label id="canvas-door-swing-label" hidden>
+                <span>Swing</span>
+                <select id="canvas-door-swing">
+                  <option value="in">Swing in</option>
+                  <option value="out">Swing out</option>
+                </select>
+              </label>
+              <div class="button-row">
+                <button id="canvas-save-segment" type="button" class="secondary-button">Save</button>
+                <button id="canvas-delete-segment" type="button" class="ghost-button danger">Delete</button>
+                <button id="canvas-close-segment-editor" type="button" class="ghost-button">Close</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="rooms-card">
+          <div class="panel-heading rooms-heading">
+            <div>
+              <h2>Rooms list</h2>
+              <p>Quick check of scope and square footage.</p>
+            </div>
+            <button id="rooms-toggle" type="button" class="ghost-button small" aria-expanded="false" aria-controls="rooms-dropdown">
+              Show rooms
+            </button>
+          </div>
+          <div id="rooms-dropdown" class="rooms-dropdown" hidden>
+            <div id="room-list" class="room-list empty-state">
+              No rooms yet. Add your first room to start the plan.
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <template id="room-card-template">
+      <article class="room-card">
+        <div>
+          <h3></h3>
+          <p class="room-card-meta"></p>
+        </div>
+        <button type="button" class="ghost-button small">Select</button>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
